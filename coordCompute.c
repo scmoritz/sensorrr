@@ -88,9 +88,8 @@ void *coordComputer(void *arg0){
                     }
                 }
 
-
             if (equal(cd, prior)){  // if we have two similar coordinates, then dont publish yet
-                average(cd, &prior);
+//                average(cd, &prior);
                 copy(cd, &prior);    // current becomes next iterations prior
                 publishFlag = false;
             }
@@ -130,8 +129,8 @@ int distance(struct CoordData coords1, struct CoordData coords2){
 
 int singleDistance(struct CoordData c){
 
-    int x = coords2.xCoord;    // order shouldn't matter
-    int y = coords2.yCoord;
+    int x = c.xCoord;    // order shouldn't matter
+    int y = c.yCoord;
 
     return sqrt((x*x+y*y));
 }
@@ -149,9 +148,6 @@ void average(struct CoordData coords1, struct CoordData *coords2){
         // average the x and y locations
     coords2->xCoord = (coords1.xCoord+coords2->xCoord)/2;
     coords2->yCoord = (coords1.yCoord+coords2->yCoord)/2;
-
-    // could update the confidence here as well but lets get this working first
-
 }
 
 void copy(struct CoordData coords1, struct CoordData *coords2){
