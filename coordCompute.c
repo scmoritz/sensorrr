@@ -50,19 +50,25 @@ void *coordComputer(void *arg0){
                     int rightbb = sData.xCenter+sData.xWidth/2;
 
                     // filter out all boxes on the edges of our view
-                    if(leftbb > 30 && rightbb < 270 ){
+                    if(leftbb > 30 && rightbb < 270 ){ // O.G. 30 to 270
 
                         // check if the object is in the center
                         if (155 > sData.xCenter || sData.xCenter > 165 ){
-                            cd.xCoord = cos(newAngle*PI/180)*pixyDist;
-                            cd.yCoord = sin(newAngle*PI/180)*pixyDist;
-                            cd.coordConf = MAX_CONFIDENCE*PIXY_ONLY_DISTANCE_CONFIDENCE;
-                            publishFlag = true;
+                            // do nothing, do not want to publish if on the edge
+//                            cd.xCoord = cos(newAngle*PI/180)*pixyDist;
+//                            cd.yCoord = sin(newAngle*PI/180)*pixyDist;
+//                            cd.coordConf = MAX_CONFIDENCE*PIXY_ONLY_DISTANCE_CONFIDENCE;
+//                            publishFlag = true;
                         } else { //else if (155 < sData.xCenter && sData.xCenter < 165 ){
 
                             // use ir sensor if distances are similar
-                            if (abs(pixyDist-irDist) < 80){
+                            if (((pixyDist-irDist) > 0?pixyDist-irDist:-(pixyDist-irDist)) < 80){
                                 float newDist = (pixyDist+irDist)/2;
+                                // weird ir error where close objects appear far away
+                                if (newDist > 1300)
+                                {
+                                    newDist = 10;
+                                }
                                 cd.xCoord = cos(newAngle*PI/180)*newDist;
                                 cd.yCoord = sin(newAngle*PI/180)*newDist;
                                 cd.coordConf = MAX_CONFIDENCE*COMBINED_IR_PIXY_CONF;
@@ -130,8 +136,8 @@ int distance(struct CoordData coords1, struct CoordData coords2){
 
 int singleDistance(struct CoordData c){
 
-    int x = coords2.xCoord;    // order shouldn't matter
-    int y = coords2.yCoord;
+    int x = c.xCoord;    // order shouldn't matter
+    int y = c.yCoord;
 
     return sqrt((x*x+y*y));
 }
