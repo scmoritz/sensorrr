@@ -105,7 +105,7 @@ void *sensorReader(void *arg0){
 //                sendSensorDataToPublishQueue(SENSOR_DATA_TOPIC, data);
 
 //                sendIRToPublishQueue(IR_TOPIC_NUM, data.irval, data.numReadings);
-//                sendPixyToPublishQueue(PIXY_TOPIC_NUM, data);
+                sendPixyToPublishQueue(PIXY_TOPIC_NUM, data);
 
                 // for coordinate compute thread
                 sendToSensorDataQueue(data);
@@ -147,17 +147,17 @@ void getBlocks(I2C_Handle pix, I2C_Transaction *transaction, struct SensorData *
     if (abs(157-mid1) < abs(157-mid2)){
         // below, center is width and width is center
         sd->objType = r[7] << 8 | r[6];
-        sd->xWidth = r[9] << 8 | r[8];
+        sd->xWidth = mid1;
         sd->xCenter  =  r[13] << 8 | r[12];
     } else {
         // below, center is width and width is center
         sd->objType = r[21] << 8 | r[20];
-        sd->xWidth = r[23] << 8 | r[22];
+        sd->xWidth = mid2;
         sd->xCenter  =  r[27] << 8 | r[26];
     }
 
-    // check for validity
-    if (sd->objType > 7){   // only training up to 7 objects
+    // check for dead center
+    if (abs(157 - sd->xWidth) > 50 ){  // 100 pixel wide center
         sd->objType = 0;    // if invalid type, then the other vals are invalid also
         sd->xWidth = 0;
         sd->xCenter = 0;
@@ -186,24 +186,23 @@ int getNewAngle(int oldAngle){
 
     int ret = oldAngle;
     static bool up = true;
-    //GPIO_toggle(CONFIG_GPIO_LED_0);
 
     if (up){
-        if (oldAngle + FIVE > HIGH_END){
+        if (oldAngle + 5 > HIGH_END){
             ret = HIGH_END;  // go back to start
             up = false;
         }
-        else if (oldAngle + FIVE <= HIGH_END)
-            ret += FIVE;
+        else if (oldAngle + 5 <= HIGH_END)
+            ret += 5;
     } else {
         ret = LOW_END;  // go back to start
         up = true;
-//        if (oldAngle - FIVE < LOW_END){
+//        if (oldAngle - 5 < LOW_END){
 //            ret = LOW_END;  // go back to start
 //            up = true;
 //        }
-//        else if (oldAngle - FIVE >= LOW_END)
-//            ret -= FIVE;
+//        else if (oldAngle - 5 >= LOW_END)
+//            ret -= 5;
     }
     return ret;
 }
@@ -223,8 +222,16 @@ int convertIRtoMil(uint32_t rawValue){
 //        distance = 500000000*pow(rawValue, -1.111);
         distance = SCALE*pow(x, POWER);
 
-        if (5 > distance || distance > 700)   // in mm
-            distance = -1;
+        if (5 > distance || distance > 70)  // wtf was using mm here...
+            return -1;
+
+        if (distance > 65)
+            distance = 0.75*distance;
+        else if (distance > 45)
+            distance = 0.8*distance;
+        else if (distance > 25)
+            distance = 0.9*distance;
+
     }
 
     return distance;

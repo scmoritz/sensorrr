@@ -43,6 +43,9 @@
 #define DOWN            0
 #define SCALE           256243
 #define POWER           -1.49
+#define FIVE    5
+#define ELEVEN  11
+#define FIFTEEN 15
 
 
 // both are default addresses

@@ -46,7 +46,7 @@ void *servoMover(void *arg0)
     Timer_Params params;
 
     Timer_Params_init(&params);
-    params.period = PERIOD*3;
+    params.period = PERIOD*3;       // 30ms
     params.periodUnits = Timer_PERIOD_US;
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = mainTimer; // callback used for a publisher board
@@ -132,9 +132,9 @@ void mainTimer(Timer_Handle myHandle, int_fast16_t status){
     sendToServoTimingQueueFromISR(NO_ANGLE);
 
     seq++;  // increment the sequence
-    if (seq % 3 == 0){
+    if (seq % 2 == 0){  // should be the same rate as the pixy cam can read new frames
         sendToServoMovingDoneQueueFromISR(NOT_FINISHED, -1);
-        //sendTimerValToPublishQueueFromISR(TIMER_TOPIC_NUM, seq);
+
     }
 
     dbgOutputLoc(DBG_MAINTIMER_CALLBACK_EXIT);
