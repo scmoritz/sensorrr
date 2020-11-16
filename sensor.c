@@ -131,19 +131,30 @@ void getBlocks(I2C_Handle pix, I2C_Transaction *transaction, struct SensorData *
 
     // get only a single block for now
     // final testing will handle multiple blocks
-    uint8_t w[] = { 0xae, 0xc1, 0x20, 0x02, 0xff, 0x01 };
-    uint8_t r[20];
+    uint8_t w[] = { 0xae, 0xc1, 0x20, 0x02, 0xff, 0x02 };
+    uint8_t r[40];
     transaction->slaveAddress = PIXY_SLAVE_ADDRESS;
     transaction->writeBuf   = w;   // buffer to write
     transaction->writeCount = 6;
     transaction->readBuf    = r;
-    transaction->readCount  = 20;
+    transaction->readCount  = 40;
 
     I2C_transfer(pix, transaction);
 
-    sd->objType = r[7] << 8 | r[6];
-    sd->xWidth = r[9] << 8 | r[8];
-    sd->xCenter  = r[13] << 8 | r[12];
+    int mid1 = r[9] << 8 | r[8];
+    int mid2 = r[23] << 8 | r[22];
+
+    if (abs(157-mid1) < abs(157-mid2)){
+        // below, center is width and width is center
+        sd->objType = r[7] << 8 | r[6];
+        sd->xWidth = r[9] << 8 | r[8];
+        sd->xCenter  =  r[13] << 8 | r[12];
+    } else {
+        // below, center is width and width is center
+        sd->objType = r[21] << 8 | r[20];
+        sd->xWidth = r[23] << 8 | r[22];
+        sd->xCenter  =  r[27] << 8 | r[26];
+    }
 
     // check for validity
     if (sd->objType > 7){   // only training up to 7 objects
