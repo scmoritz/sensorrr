@@ -33,7 +33,7 @@ void *coordComputer(void *arg0){
                     cd.objConf = MAX_CONFIDENCE*PIXY_OBJECT_CONFIDENCE;
 
                     signed int offset = 30-(sData.xCenter*60)/315;   // angle of pixy obj in pixy terms
-                    float pixyDist = 10*(3.59+(1680.23/sData.xWidth));//(0.0413*pow(sData.xWidth,2)-4.8045*sData.xWidth+170.25)*10; // distance in pixy terms
+                    float pixyDist = 10*(-1.0819+(1811.6/sData.xWidth)); // distance in pixy terms
                     int newAngle = sData.angle + offset;             // servo angle plus pixy obj angle
 
 
