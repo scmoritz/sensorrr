@@ -24,18 +24,17 @@ void *coordComputer(void *arg0){
 
         if(readFromSensorDataQueue(&sData)){
 
-            float ySOffset = 20*sin(sData.angle);
-            float xSOffset = 20*cos(sData.angle);
-            float irDist = 10*sData.irval +20;  // cm to mm
+            float ySOffset = 10*sin(sData.angle);   // in mm
+            float xSOffset = 10*cos(sData.angle);
+            float irDist = 10*sData.irval - 20;  // cm to mm
 
                 if (sData.objType != 0){
                     cd.objType = sData.objType;
                     cd.objConf = MAX_CONFIDENCE*PIXY_OBJECT_CONFIDENCE;
 
-                    signed int offset = 30-(sData.xCenter*60)/315;   // angle of pixy obj in pixy terms
+                    signed int offset = 30-((sData.xCenter-10)*60)/315;   //subtract 10 pixels to center; angle of pixy obj in pixy terms
                     float pixyDist = 10*(-1.0819+(1811.6/sData.xWidth)); // distance in pixy terms
                     int newAngle = sData.angle + offset;             // servo angle plus pixy obj angle
-
 
                     if (newAngle<0) newAngle = 0;
                     else if (newAngle >180) newAngle = 180;
@@ -46,22 +45,17 @@ void *coordComputer(void *arg0){
                     // filter out all boxes on the edges of our view
                     if(leftbb > 30 && rightbb < 270 ){ // O.G. 30 to 270
 
-                        if ( sData.xCenter < 110 || 205 < sData.xCenter ){
-                            // if we arent in the center but somehow still have a valid box, use only pixy
-                            cd.xCoord = cos(newAngle*PI/180)*pixyDist;
-                            cd.yCoord = sin(newAngle*PI/180)*pixyDist;
-                            cd.coordConf = MAX_CONFIDENCE*PIXY_ONLY_DISTANCE_CONFIDENCE;
-                            publishFlag = true;
+                        if ( sData.xCenter < 125 || 195 < sData.xCenter ){
+                            // if we arent in the center but somehow still have a valid box, skip
+//                            cd.xCoord = cos(newAngle*PI/180)*pixyDist;
+//                            cd.yCoord = sin(newAngle*PI/180)*pixyDist;
+//                            cd.coordConf = MAX_CONFIDENCE*PIXY_ONLY_DISTANCE_CONFIDENCE;
+//                            publishFlag = true;
                         } else {
                             // use ir sensor if distances are similar
                             //if (((pixyDist-irDist) > 0 ? pixyDist-irDist : -(pixyDist-irDist)) < 80){
                             if(abs(pixyDist-irDist) < 80){
                                 float newDist = (pixyDist+irDist)/2;
-                                // weird ir error where close objects appear far away
-//                                if (newDist > 1300)
-//                                {
-//                                    newDist = 10;
-//                                }
                                 cd.xCoord = cos(newAngle*PI/180)*newDist;
                                 cd.yCoord = sin(newAngle*PI/180)*newDist;
                                 cd.coordConf = MAX_CONFIDENCE*COMBINED_IR_PIXY_CONF;

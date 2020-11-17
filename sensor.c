@@ -222,15 +222,15 @@ int convertIRtoMil(uint32_t rawValue){
 //        distance = 500000000*pow(rawValue, -1.111);
         distance = SCALE*pow(x, POWER);
 
-        if (5 > distance || distance > 70)  // wtf was using mm here...
-            return -1;
-
         if (distance > 65)
-            distance = 0.75*distance;
+            distance = 0.7*distance;
         else if (distance > 45)
             distance = 0.8*distance;
         else if (distance > 25)
             distance = 0.9*distance;
+
+        if (5 > distance || distance > 70)
+            return -1;
 
     }
 
